@@ -8,7 +8,6 @@ import { credentialSetSchema, credentialSetHandler } from './tools/credential-se
 import { credentialListSchema, credentialListHandler } from './tools/credential-list.js';
 import { credentialDeleteSchema, credentialDeleteHandler } from './tools/credential-delete.js';
 import { credentialUpdateSchema, credentialUpdateHandler } from './tools/credential-update.js';
-import { resolveSecureSchema, resolveSecureHandler } from './tools/resolve-secure.js';
 
 const PURGE_INTERVAL_MS = 60_000;
 
@@ -57,15 +56,6 @@ export async function startMcpServer(): Promise<void> {
       inputSchema: credentialUpdateSchema,
     },
     async (input) => ({ content: [{ type: 'text', text: await credentialUpdateHandler(input as any) }] }),
-  );
-
-  server.registerTool(
-    'resolve_secure',
-    {
-      description: 'Resolve {{secure.NAME}} tokens in text to their credential values. Returns resolved text and redaction markers.',
-      inputSchema: resolveSecureSchema,
-    },
-    async (input) => ({ content: [{ type: 'text', text: await resolveSecureHandler(input as any) }] }),
   );
 
   const purgeTimer = setInterval(() => {

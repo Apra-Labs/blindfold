@@ -17,8 +17,6 @@ import { credentialListHandler } from '../src/mcp/tools/credential-list.js';
 import { credentialDeleteHandler } from '../src/mcp/tools/credential-delete.js';
 import { credentialUpdateHandler } from '../src/mcp/tools/credential-update.js';
 import { credentialSetHandler } from '../src/mcp/tools/credential-set.js';
-import { resolveSecureHandler } from '../src/mcp/tools/resolve-secure.js';
-
 function sendPassword(sockPath: string, memberName: string, password: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const client = net.connect(sockPath, () => {
@@ -158,68 +156,4 @@ describe('MCP tool handlers', () => {
     });
   });
 
-  describe('resolveSecureHandler', () => {
-    it('resolves tokens in text', async () => {
-      credentialSet('MY_TOKEN', 'secret-val', false, 'allow');
-      const result = await resolveSecureHandler({
-        text: 'curl -H "Auth: {{secure.MY_TOKEN}}"',
-        shell_escape: false,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.resolved).toContain('secret-val');
-      expect(parsed.redact_markers).toContain('[REDACTED:MY_TOKEN]');
-    });
-
-    it('returns text unchanged when no tokens present', async () => {
-      const result = await resolveSecureHandler({
-        text: 'just plain text',
-        shell_escape: true,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.resolved).toBe('just plain text');
-      expect(parsed.redact_markers).toEqual([]);
-    });
-
-    it('returns error for missing credential', async () => {
-      const result = await resolveSecureHandler({
-        text: 'curl {{secure.NONEXISTENT}}',
-        shell_escape: true,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.error).toContain('not found');
-    });
-
-    it('applies shell escaping by default', async () => {
-      credentialSet('SHELL_TEST', "val'with'quotes", false, 'allow');
-      const result = await resolveSecureHandler({
-        text: 'echo {{secure.SHELL_TEST}}',
-        shell_escape: true,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.resolved).not.toContain("val'with'quotes");
-      expect(parsed.resolved).toContain('val');
-    });
-
-    it('supports Windows shell escaping', async () => {
-      credentialSet('WIN_TEST', 'test$value', false, 'allow');
-      const result = await resolveSecureHandler({
-        text: 'echo {{secure.WIN_TEST}}',
-        os: 'windows',
-        shell_escape: true,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.resolved).toContain('test');
-    });
-
-    it('respects caller scoping', async () => {
-      credentialSet('SCOPED', 'val', false, 'allow', ['member-a']);
-      const result = await resolveSecureHandler({
-        text: '{{secure.SCOPED}}',
-        caller: 'member-b',
-        shell_escape: false,
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.error).toBeDefined();
-    });
-  });
 });

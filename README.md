@@ -12,7 +12,7 @@ blindfold install        # registers the MCP server with Claude Desktop and Clau
 # Restart your AI client
 ```
 
-Once registered, Claude will have five new MCP tools for storing and resolving credentials.
+Once registered, Claude will have four new MCP tools for managing credentials.
 
 ---
 
@@ -63,8 +63,34 @@ await startMcpServer();
 | `credential_store_set` | Collect a new secret from the user via OOB side-channel and store it |
 | `credential_store_update` | Update an existing credential (rotate secret, change TTL, adjust policy) |
 | `credential_store_delete` | Delete a stored credential by name |
-| `credential_store_list` | List stored credentials (names and metadata only — no plaintext) |
-| `resolve_secure` | Resolve `{{secure.NAME}}` tokens in a string, returning the plaintext with shell escaping |
+| `credential_store_list` | List stored credentials (names and metadata only -- no plaintext) |
+
+---
+
+## Standalone vs host-integrated usage
+
+Blindfold's MCP surface covers vault management only: `credential_store_set`,
+`credential_store_list`, `credential_store_update`, and `credential_store_delete`.
+There is no `resolve_secure` MCP tool. This is intentional.
+
+Resolving a `{{secure.NAME}}` token means producing the plaintext credential.
+If that resolution happened inside an MCP tool response, the plaintext would
+land directly in the LLM's context window -- defeating the entire purpose of
+the token model.
+
+To use stored credentials inside an agentic workflow, you need a host
+integration: an application that imports blindfold as a library and calls
+`resolveSecureTokens` (or `resolveSecureField`) immediately before executing
+a command or API call -- keeping the plaintext inside application memory and
+out of the LLM stream.
+
+apra-fleet is the reference host integration. Its `execute_command` tool
+resolves `{{secure.NAME}}` tokens just before spawning the subprocess, then
+redacts the output with `redactOutput` before returning results to the model.
+
+Without a host integration your LLM can store and list credentials but cannot
+resolve them into plaintext. That restriction is deliberate: it is the whole
+point of the design.
 
 ---
 
