@@ -1,6 +1,6 @@
 {
-  "name": "blindfold",
-  "version": "0.0.2",
+  "name": "@apralabs/blindfold",
+  "version": "0.1.0",
   "description": "Secure credential vault for AI agents — OOB collection, encryption, and token resolution that keeps secrets out of LLM context windows",
   "author": "Apra Labs",
   "homepage": "https://github.com/Apra-Labs/blindfold",
@@ -30,6 +30,9 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": ["mcp", "credentials", "secrets", "ai-agents", "claude", "oob", "vault"],
   "engines": {
     "node": ">=20"

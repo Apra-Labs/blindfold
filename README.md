@@ -7,10 +7,12 @@
 ## Quick start
 
 ```bash
-npm install -g blindfold
+npm install -g @apralabs/blindfold
 blindfold install        # registers the MCP server with Claude Desktop and Claude Code
 # Restart your AI client
 ```
+
+The package is published scoped (`@apralabs/blindfold`); the command installed on `PATH` is `blindfold`.
 
 Once registered, Claude will have four new MCP tools for managing credentials.
 
